@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Components/TimelineComponent.h"
 #include "AfterimageCharacter.generated.h"
 
 
@@ -40,6 +41,8 @@ class AAfterimageCharacter : public ACharacter
 public:
 	AAfterimageCharacter();
 	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 
@@ -62,5 +65,23 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+protected:
+	FTimeline CurveTimeLine;
+
+	void PressAfterimageKey();
+	bool OnAfterimage = false;
+
+private:
+	UFUNCTION()
+		void TimelineProgress(float Value);
+	UFUNCTION()
+		void FinishTimeLine();
+
+public:
+	UPROPERTY(EditAnywhere, Category = "TimeLine")
+		UCurveFloat* CurveFloat;
+	//UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	//	TSubclassOf<AActor> ActorToSpawn;
 };
 
