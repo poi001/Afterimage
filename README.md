@@ -101,13 +101,13 @@ void AAfterimage_::Tick(float DeltaTime)
 //커브float가 있다면
 	if (CurveFloat)
 	{
-		FOnTimelineFloat TimelineProgress;									//타임라인 생성
+		FOnTimelineFloat TimelineProgress;					//타임라인 생성
 		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));	//해당 함수를 이어준다
-		FOnTimelineEvent FinishTimeLine;									//타임라인 이벤트 생성
+		FOnTimelineEvent FinishTimeLine;					//타임라인 이벤트 생성
 		FinishTimeLine.BindUFunction(this, FName("FinishTimeLine"));		//해당 함수를 이어준다.
-		CurveTimeLine.AddInterpFloat(CurveFloat, TimelineProgress);			//CurveFloat값을 매개변수로 해서 받아낸다.
+		CurveTimeLine.AddInterpFloat(CurveFloat, TimelineProgress);		//CurveFloat값을 매개변수로 해서 받아낸다.
 		CurveTimeLine.SetTimelineFinishedFunc(FinishTimeLine);	//타임라인이 끝나면 FinishTimeLine에 연결된 FinishTimeLine함수 실행
-		CurveTimeLine.SetLooping(false);									//루프 하지 말고 끝났을때 리셋시키게
+		CurveTimeLine.SetLooping(false);					//루프 하지 말고 끝났을때 리셋시키게
 	}
 ```
 
