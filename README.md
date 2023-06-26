@@ -70,18 +70,7 @@ void AAfterimage_::Init(USkeletalMeshComponent* Pawn)
 }
 ```
 
-* `PoseableMesh` : 메쉬의 포즈정보만 복사해오는 컴포넌트이다. 이 변수에 플레이어 캐릭터의 SkeletalMesh 포즈를 복제한다.
-* `TArray<UMaterialInterface*> Mats` : 이 배열은 for문을 알맞게 쓰기 위해 임의로 만든 UMaterialInterface자료형의 배열이다. `PoseableMesh`의 머티리얼을 담았다.
-* `Materials` : 잔상 머티리얼 인스턴스를 담을 배열이다. 각 원소마다 AfterImageMaterials를 할당하였다.
-* `AfterImageMaterials` : 효과를 주기위한 머티리얼이다. 림라이트이다. ( 림라이트:피사체 뒤에서 강한 조명을 주는 것 )
-* `PoseableMesh->SetMaterial(i, Materials[i])` : `PoseableMesh`의 머티리얼을 `Materials`로 설정한다.
-* `FadeOutTime` : 잔상이 사라질 시간을 담을 Float형 변수이다.
-* `FadeCountDown` : 잔상이 몇 초동안 남아있는지 재는 Float형 변수이다.
-* `IsSpawned` : 잔상을 소환할 것인지에 대한 Bool형 변수이다.
-
-위에 Init함수는 잔상의 처음 초기화를 시킬 때 호출하는 함수로 쓰일 것이다.
-
-아래 코드는 잔상의 코드의 Tick부분이다. ( AAfterimage_.cpp )
+다음은 잔상이 소환됐을 시, 구현을 할 Tick함수이다.( AAfterimage_.cpp )
 
 ```
 void AAfterimage_::Tick(float DeltaTime)
@@ -106,7 +95,51 @@ void AAfterimage_::Tick(float DeltaTime)
 }
 ```
 
-* `if (IsSpawned)` : IsSpawned이 true일 때만 실행되도록 하였다.
-* `FadeCountDown -= DeltaTime` : FadeCountDown를 DeltaTime만큼 Tick마다 감소시켜준다. ( 0.5f로 설정하였다 )
-* `for (int i = 0; i < Materials.Num(); i++)` : `Materials`의 배열 원소만큼(머티리얼 인터페이스) 반복문을 돌린다.
-* `Materials[i]->SetScalarParameterValue("Opacity", FadeCountDown / FadeOutTime)` : 
+다음은 플레이어 캐릭터 BeginPlay에 넣을 타임라인 관련 코드이다. ( AfterimageCharacter.cpp )
+
+```
+//커브float가 있다면
+	if (CurveFloat)
+	{
+		FOnTimelineFloat TimelineProgress;									//타임라인 생성
+		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));	//해당 함수를 이어준다
+		FOnTimelineEvent FinishTimeLine;									//타임라인 이벤트 생성
+		FinishTimeLine.BindUFunction(this, FName("FinishTimeLine"));		//해당 함수를 이어준다.
+		CurveTimeLine.AddInterpFloat(CurveFloat, TimelineProgress);			//CurveFloat값을 매개변수로 해서 받아낸다.
+		CurveTimeLine.SetTimelineFinishedFunc(FinishTimeLine);	//타임라인이 끝나면 FinishTimeLine에 연결된 FinishTimeLine함수 실행
+		CurveTimeLine.SetLooping(false);									//루프 하지 말고 끝났을때 리셋시키게
+	}
+```
+
+다음은 플레이어 캐릭터 코드에서 타임라인에 관련된 사용자 정의함수이다. ( AfterimageCharacter.cpp )
+
+```
+void AAfterimageCharacter::TimelineProgress(float Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%f"), Value);
+}
+
+void AAfterimageCharacter::FinishTimeLine()
+{
+	FActorSpawnParameters SpawnParams;			//SpawnActor 함수에 전달되는 선택적 매개 변수의 구조체
+	SpawnParams.Owner = this;					//소환될 액터의 소유를 플레이어 캐릭터로 설정
+
+	FTransform transform = GetMesh()->GetComponentTransform();	//플레이어 캐릭터의 트랜스폼
+
+	//월드상에서 액터 스폰을 요청한다.(액터 종류,액터 방향,회전,액터의 주인)
+	auto GTrail = Cast<AAfterimage_>(GetWorld()->SpawnActor<AActor>(AAfterimage_::StaticClass(), transform, SpawnParams));
+	if (GTrail)
+	{
+		GTrail->Init(GetMesh());	//소환될 잔상의 설정 초기화
+	}
+
+	//처음이라면
+	if (CurveTimeLine.GetPlaybackPosition() == 0.0f)
+		CurveTimeLine.Play();		//타임라인 시작
+	//끝났을때
+	else if (CurveTimeLine.GetPlaybackPosition() == CurveTimeLine.GetTimelineLength())
+		CurveTimeLine.Reverse();	//타임라인 역재생
+}
+```
+
+타임라인 사용 방법은 타임라인이 끝날 때, 실행되는 함수를 델리게이트한다. 그 델리게이트된 함수의 내용은 잔상을 소환하고 타임라인이 끝났을 때는 다시 재생하는 코드이다.
