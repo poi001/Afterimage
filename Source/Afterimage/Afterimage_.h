@@ -27,7 +27,7 @@ public:
 
 private:
 	class UPoseableMeshComponent* PoseableMesh;			//메쉬의 포즈정보만 복사해오는 컴포넌트
-	class UMaterial* AfterImageMaterials;		//효과를 주기위한 머티리얼(림라이트를 쓰기로했다) 림라이트:피사체 뒤의 빛
+	class UMaterial* AfterImageMaterials;				//효과를 주기위한 머티리얼(림라이트를 쓰기로했다) 림라이트:피사체 뒤의 빛
 	TArray<class UMaterialInstanceDynamic*> Materials;	//잔상 머티리얼 인스턴스 배열
 
 	bool IsSpawned = false;			//잔상이 스폰됐는지 변수
