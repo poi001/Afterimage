@@ -1,5 +1,5 @@
 # Afterimage
-언리얼 엔진에서 잔상 시스템을 구현한 언리얼 C++ 프로젝트.
+언리얼(5.1) 엔진에서 잔상 시스템을 구현한 언리얼 C++ 프로젝트.
  
 ## Preview
 ![Afterimage](https://github.com/poi001/Afterimage/assets/107660181/38d3e683-f52e-46dc-badb-ac403cee0682)
